@@ -18,6 +18,8 @@ import java.net.Socket;
 public class RealChatClient extends Application {
 
     ListView <String> names = new ListView<>();
+    ListView <String> history = new ListView<>();
+
     private TextArea sentMsgs;
     GridPane gpLogin = new GridPane();
     GridPane gpOutput = new GridPane();
@@ -28,12 +30,12 @@ public class RealChatClient extends Application {
     GridPane gp3 = new GridPane();
 
 
-    boolean loggedIn = false;
 
     static private PrintWriter writer;
     static private BufferedReader reader;
 
-    private MenuBar friendsAndHistory = new MenuBar();
+    private TabPane tabPane = new TabPane();
+
     private TextArea makeMsg;
 
     public void run() throws Exception {
@@ -63,7 +65,7 @@ public class RealChatClient extends Application {
 
         sentMsgs = new TextArea();
         sentMsgs.setEditable(false);
-        sentMsgs.setPrefHeight(575);
+        sentMsgs.setPrefHeight(577);
         sentMsgs.setPrefWidth(580);
         //sentMsgs.setPrefHeight();
 
@@ -91,16 +93,26 @@ public class RealChatClient extends Application {
         names.getItems().addAll("Nabil", "Jun Min", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3");
         names.setMinHeight(550);
 
-        Menu friendsList = new Menu("Friends List");
-        Menu chatHistory = new Menu("Chat History");
-        friendsAndHistory.getMenus().addAll(friendsList, chatHistory);
+        history.getItems().addAll("Nerd Squad", "ECE homies", "Sports club");
+        history.setMinHeight(550);
+
+        Tab friendsList = new Tab("Friends List");
+        friendsList.setClosable(false);
+        friendsList.setContent(names);
+        friendsList.setStyle("-fx-font-size: 13pt;");
+        Tab chatHistory = new Tab("Group Chats");
+        chatHistory.setClosable(false);
+        chatHistory.setContent(history);
+        chatHistory.setStyle("-fx-font-size: 13pt;");
+
+        tabPane.getTabs().addAll(friendsList,chatHistory);
 
         gpLayout.add(gpOutput,0,0);
         gpLayout.add(gpFriends, 1, 0);
         gpLayout.add(gpTypeMsg, 0, 575);
 
         gpOutput.add(sentMsgs, 0, 0);
-        gpFriends.addColumn(0, friendsAndHistory, names);
+        gpFriends.addColumn(0, tabPane);
         gpTypeMsg.addRow(0, makeMsg, sendMsg);
         //gpLayout.add(sendMsg, 480, 575);
 
