@@ -34,7 +34,6 @@ public class RealChatClient extends Application {
     ListView <String> history = new ListView<>();
 
     private ClientInfo user;
-
     private TextArea sentMsgs;
     GridPane gpLogin = new GridPane();
     GridPane gpOutput = new GridPane();
@@ -205,6 +204,8 @@ public class RealChatClient extends Application {
          startButton.setOnAction(new EventHandler<ActionEvent>() {
              @Override
              public void handle(ActionEvent event) {
+            	 
+            	 user = new ClientInfo(usernameInput.getText());
                  logInStage.close();
                  chatClient();
              }
