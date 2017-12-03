@@ -20,6 +20,8 @@ public class RealChatClient extends Application {
     ListView <String> names = new ListView<>();
     ListView <String> history = new ListView<>();
 
+    private ClientInfo user;
+
     private TextArea sentMsgs;
     GridPane gpLogin = new GridPane();
     GridPane gpOutput = new GridPane();
