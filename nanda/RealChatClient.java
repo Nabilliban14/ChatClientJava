@@ -1,3 +1,4 @@
+
 package nanda;
 
 import javafx.application.Application;
@@ -8,6 +9,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -24,21 +28,34 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 public class RealChatClient extends Application {
+	
+
+    ListView <String> names = new ListView<>();
+    ListView <String> history = new ListView<>();
+
+    private ClientInfo user;
 
     private TextArea sentMsgs;
+    GridPane gpLogin = new GridPane();
+    GridPane gpOutput = new GridPane();
+    GridPane gpFriends = new GridPane();
     GridPane gpLayout = new GridPane();
-    GridPane gp1 = new GridPane();
+    GridPane gpTypeMsg = new GridPane();
     GridPane gp2 = new GridPane();
     GridPane gp3 = new GridPane();
-	PrintWriter upwriter = null;
+    GridPane gp1 = new GridPane();
 
-    boolean loggedIn = false;
 
     static private PrintWriter writer;
     static private BufferedReader reader;
 
+    private TabPane tabPane = new TabPane();
+
     private TextArea makeMsg;
-    private TextArea usernameInput;
+
+	PrintWriter upwriter = null;
+
+
     
     public void run() throws Exception {
         setUpNetworking();
@@ -67,7 +84,7 @@ public class RealChatClient extends Application {
 
         sentMsgs = new TextArea();
         sentMsgs.setEditable(false);
-        sentMsgs.setPrefHeight(575);
+        sentMsgs.setPrefHeight(577);
         sentMsgs.setPrefWidth(580);
         //sentMsgs.setPrefHeight();
 
@@ -79,7 +96,7 @@ public class RealChatClient extends Application {
         makeMsg.setEditable(true);
 
         Button sendMsg = new Button("Send");
-        sendMsg.setPrefHeight(50);
+        sendMsg.setPrefHeight(75);
         sendMsg.setPrefWidth(100);
 
         sendMsg.setOnAction(new EventHandler<ActionEvent>() {
@@ -92,11 +109,31 @@ public class RealChatClient extends Application {
             }
         });
 
+        names.getItems().addAll("Nabil", "Jun Min", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3");
+        names.setMinHeight(550);
 
+        history.getItems().addAll("Nerd Squad", "ECE homies", "Sports club");
+        history.setMinHeight(550);
 
-        gpLayout.add(sentMsgs,0,0);
-        gpLayout.add(makeMsg,0,575);
-        gpLayout.add(sendMsg, 1, 575);
+        Tab friendsList = new Tab("Friends List");
+        friendsList.setClosable(false);
+        friendsList.setContent(names);
+        friendsList.setStyle("-fx-font-size: 13pt;");
+        Tab chatHistory = new Tab("Group Chats");
+        chatHistory.setClosable(false);
+        chatHistory.setContent(history);
+        chatHistory.setStyle("-fx-font-size: 13pt;");
+
+        tabPane.getTabs().addAll(friendsList,chatHistory);
+
+        gpLayout.add(gpOutput,0,0);
+        gpLayout.add(gpFriends, 1, 0);
+        gpLayout.add(gpTypeMsg, 0, 575);
+
+        gpOutput.add(sentMsgs, 0, 0);
+        gpFriends.addColumn(0, tabPane);
+        gpTypeMsg.addRow(0, makeMsg, sendMsg);
+        //gpLayout.add(sendMsg, 480, 575);
 
         chatClientStage.setTitle("The Best Chat Client Ever");
         chatClientStage.setScene(scene);
@@ -251,3 +288,6 @@ public class RealChatClient extends Application {
     	
     }
 }
+
+
+

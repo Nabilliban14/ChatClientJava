@@ -1,3 +1,4 @@
+
 package nanda;
 
 import java.io.*;
@@ -42,7 +43,7 @@ public class ChatClient {
 
 	private void setUpNetworking() throws Exception {
 		@SuppressWarnings("resource")
-		Socket sock = new Socket("10.148.216.65", 4242);
+		Socket sock = new Socket("127.0.0.1", 4242);
 		InputStreamReader streamReader = new InputStreamReader(sock.getInputStream());
 		reader = new BufferedReader(streamReader);
 		writer = new PrintWriter(sock.getOutputStream());
