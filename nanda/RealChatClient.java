@@ -15,9 +15,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 
 public class RealChatClient extends Application {
@@ -27,6 +30,7 @@ public class RealChatClient extends Application {
     GridPane gp1 = new GridPane();
     GridPane gp2 = new GridPane();
     GridPane gp3 = new GridPane();
+	PrintWriter upwriter = null;
 
     boolean loggedIn = false;
 
@@ -101,43 +105,7 @@ public class RealChatClient extends Application {
 
     public void start(Stage primaryStage) throws Exception{
         run();
-
-        GridPane gpLogin = new GridPane();
-        gpLogin.setPadding( new Insets(10, 10, 10, 10));
-        gpLogin.setVgap(10);
-        gpLogin.setHgap(10);
-        
-        Label username = new Label("Username:");
-        GridPane.setConstraints(username, 8 , 12);
-        
-        TextField usernameInput = new TextField();
-        GridPane.setConstraints(usernameInput, 9, 12);
-        
-        Label password = new Label("Password:");
-        GridPane.setConstraints(password, 8 , 13);
-        
-        TextField passwordInput = new TextField();
-        passwordInput.setPromptText("password");
-        GridPane.setConstraints(passwordInput, 9 , 13);
-
-        Button startButton = new Button("Log In");
-        GridPane.setConstraints(startButton, 9 , 14);
-
-        gpLogin.getChildren().addAll(username, usernameInput, password, passwordInput, startButton);
-
-        Scene sc = new Scene(gpLogin, 400, 400);
-        
-        startButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                primaryStage.close();
-                chatClient();
-            }
-        });
-
-        primaryStage.setTitle("The Best Chat Client Ever");
-        primaryStage.setScene(sc);
-        primaryStage.show();
+        logIn();
 
     }
 /*
@@ -161,5 +129,125 @@ public class RealChatClient extends Application {
                 ex.printStackTrace();
             }
         }
+    }
+    
+    private void logIn() {
+    	 Stage logInStage = new Stage();
+    	
+    	 GridPane gpLogin = new GridPane();
+         gpLogin.setPadding( new Insets(10, 10, 10, 10));
+         gpLogin.setVgap(10);
+         gpLogin.setHgap(10);
+         
+         Label username = new Label("Username:");
+         GridPane.setConstraints(username, 8 , 12);
+         
+         TextField usernameInput = new TextField();
+         GridPane.setConstraints(usernameInput, 9, 12);
+         
+         Label password = new Label("Password:");
+         GridPane.setConstraints(password, 8 , 13);
+         
+         TextField passwordInput = new TextField();
+         passwordInput.setPromptText("password");
+         GridPane.setConstraints(passwordInput, 9 , 13);
+
+         Button startButton = new Button("Log In");
+         GridPane.setConstraints(startButton, 9 , 14);
+         
+         Label register = new Label("New? Click register!");
+         GridPane.setConstraints(register, 9 , 19);
+
+         Button registerButton = new Button("Register");
+         GridPane.setConstraints(registerButton,  9,  20);
+         
+         gpLogin.getChildren().addAll(username, usernameInput, password, passwordInput, register, startButton, registerButton);
+
+         Scene sc = new Scene(gpLogin, 400, 400);
+         
+         startButton.setOnAction(new EventHandler<ActionEvent>() {
+             @Override
+             public void handle(ActionEvent event) {
+                 logInStage.close();
+                 chatClient();
+             }
+         });
+
+         registerButton.setOnAction(new EventHandler<ActionEvent>() {
+             @Override
+             public void handle(ActionEvent event) {
+                 logInStage.close();
+                 register();
+             }
+         });        
+         logInStage.setTitle("The Best Chat Client Ever");
+         logInStage.setScene(sc);
+         logInStage.show();
+    	
+    }
+
+    
+    private void register() {
+    	Stage regStage = new Stage();
+        GridPane gpReg = new GridPane();
+        gpReg.setPadding( new Insets(10, 10, 10, 10));
+        gpReg.setVgap(10);
+        gpReg.setHgap(6);
+        
+        Label username = new Label("Enter desired username:");
+        GridPane.setConstraints(username, 8 , 12);
+        
+        TextField usernameInput = new TextField();
+        GridPane.setConstraints(usernameInput, 9, 12);
+        
+        Label password = new Label("Enter desired password:");
+        GridPane.setConstraints(password, 8 , 13);
+        
+        TextField passwordInput = new TextField();
+        GridPane.setConstraints(passwordInput, 9 , 13);
+        
+        Label confirmPassword = new Label("Confirm password:");
+        GridPane.setConstraints(confirmPassword, 8 , 14);
+        
+        TextField confirmPasswordInput = new TextField();
+        GridPane.setConstraints(confirmPasswordInput, 9 , 14);
+
+        Button regButton = new Button("Register");
+        GridPane.setConstraints(regButton, 9 , 15);
+        
+        gpReg.getChildren().addAll(username, usernameInput, password, passwordInput, confirmPassword,confirmPasswordInput, regButton);
+
+        Scene sc = new Scene(gpReg, 400, 400);
+        
+        regStage.setTitle("Registering");
+        regStage.setScene(sc);
+        regStage.show();
+        
+        String userpswd = usernameInput.getText() + "//" + passwordInput.getText();
+        System.out.println(userpswd);
+        File file = new File("C:\\Users\\junmin777\\eclipse-workspace\\nanda\\src\\nanda\\userpswd.txt");
+        try {
+			 upwriter = new PrintWriter(file, "UTF-8");
+		} catch (FileNotFoundException e) {
+			System.out.println("file not found");
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			System.out.println("idk what to do lmao");
+			e.printStackTrace();
+		}
+
+        regButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+            	upwriter.println(userpswd);
+            	regStage.close();
+                logIn();
+            }
+        });   
+        
+        
+        
+    	
     }
 }
