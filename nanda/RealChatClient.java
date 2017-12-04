@@ -30,6 +30,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Scanner;
 
 
@@ -78,7 +80,7 @@ public class RealChatClient extends Application {
 
     private void setUpNetworking() throws Exception {
         @SuppressWarnings("resource")
-        Socket sock = new Socket("10.148.32.164", 4242);
+        Socket sock = new Socket("127.0.0.1", 4242);
         InputStreamReader streamReader = new InputStreamReader(sock.getInputStream());
         reader = new BufferedReader(streamReader);
         writer = new PrintWriter(sock.getOutputStream());
@@ -117,7 +119,7 @@ public class RealChatClient extends Application {
         sendMsg.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                writer.println(user.username + "¤" + "junminlol" + "¤" +  "junminlol2" + "¤" + makeMsg.getText());
+                writer.println(user.username + "|" + "junmin" + "|" + "_" + makeMsg.getText());
                 writer.flush();
                 makeMsg.setText("");
                 makeMsg.requestFocus();
@@ -175,12 +177,25 @@ public class RealChatClient extends Application {
             String message;
             try {
                 while ((message = reader.readLine()) != null) {
-                    String[] appendedMsg = message.split("¤");
-
-                    for (int i = 0; i < 2; i++) {
-                        if (appendedMsg[i].equals(user.getUsername())) {
-                            sentMsgs.appendText(appendedMsg[appendedMsg.length - 1] + "\n");
+                    int number = -1;
+                    boolean myMsg = false;
+                    HashSet<String> usernames = new HashSet<>();
+                    String username = "";
+                    for (int i = 0; i < message.length(); i++) {
+                        if (Character.toString(message.charAt(i)).equals("_")) {
+                            number = i + 1;
+                            break;
                         }
+                        else if (Character.toString(message.charAt(i)).equals("|")) {
+                            usernames.add(username);
+                            username = "";
+                        }
+                        else {
+                            username += Character.toString(message.charAt(i));
+                        }
+                    }
+                    if (usernames.contains(user.getUsername()) && number != -1) {
+                        sentMsgs.appendText(message.substring(number, message.length()));
                     }
                 }
             }
