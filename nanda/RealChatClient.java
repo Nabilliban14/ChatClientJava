@@ -22,11 +22,14 @@ import javafx.scene.control.TextField;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.Scanner;
 
 
 
@@ -48,6 +51,12 @@ public class RealChatClient extends Application {
     GridPane gp2 = new GridPane();
     GridPane gp3 = new GridPane();
     GridPane gp1 = new GridPane();
+	String newLine = System.getProperty("line.separator");
+
+    
+	File file = new File("C:\\Users\\junmin777\\eclipse-workspace\\nanda\\src\\nanda\\userpswd.txt");
+	FileReader upfr = null;
+    BufferedReader upbr = null;
 
 
     static private PrintWriter writer;
@@ -57,8 +66,9 @@ public class RealChatClient extends Application {
 
     private TextArea makeMsg;
 
-	PrintWriter upwriter = null;
-
+	FileWriter upwriter = null;
+	
+	
 
     
     public void run() throws Exception {
@@ -209,10 +219,29 @@ public class RealChatClient extends Application {
          startButton.setOnAction(new EventHandler<ActionEvent>() {
              @Override
              public void handle(ActionEvent event) {
-            	 
             	 user = new ClientInfo(usernameInput.getText());
-                 logInStage.close();
-                 chatClient();
+            	 try {
+            		boolean match = false;
+					Scanner upscanner = new Scanner(file);
+	            	String enteredup = usernameInput.getText() + "//" + passwordInput.getText();
+	            	while (upscanner.hasNextLine()) {
+	            		String tempup = upscanner.nextLine();
+	            		if(tempup.equals(enteredup)) {match = true;}
+	            	}
+	            	if(match) {
+	                    logInStage.close();
+	                    chatClient();
+	            	}
+	            	else {
+	            		Label warning = new Label("username/pswd not found");
+	                    GridPane.setConstraints(warning, 9 , 17);
+	                    gpLogin.getChildren().add(warning);
+	            	}
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					System.out.println("file not found");
+					e.printStackTrace();
+				}
              }
          });
 
@@ -220,7 +249,8 @@ public class RealChatClient extends Application {
              @Override
              public void handle(ActionEvent event) {
                  logInStage.close();
-                 register();
+					register();
+
              }
          });        
          logInStage.setTitle("The Best Chat Client Ever");
@@ -230,7 +260,7 @@ public class RealChatClient extends Application {
     }
 
     
-    private void register() {
+    private void register()  {
     	Stage regStage = new Stage();
         GridPane gpReg = new GridPane();
         gpReg.setPadding( new Insets(10, 10, 10, 10));
@@ -265,30 +295,53 @@ public class RealChatClient extends Application {
         regStage.setTitle("Registering");
         regStage.setScene(sc);
         regStage.show();
-        
-        String userpswd = usernameInput.getText() + "//" + passwordInput.getText();
-        System.out.println(userpswd);
-        File file = new File("C:\\Users\\junmin777\\eclipse-workspace\\nanda\\src\\nanda\\userpswd.txt");
-        try {
-			 upwriter = new PrintWriter(file, "UTF-8");
-		} catch (FileNotFoundException e) {
-			System.out.println("file not found");
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			System.out.println("idk what to do lmao");
-			e.printStackTrace();
-		}
+
 
         regButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-            	upwriter.println(userpswd);
-            	regStage.close();
-                logIn();
+            	Scanner upscanner = null;
+				try {
+					upscanner = new Scanner (file);
+					boolean exists = false;
+					upwriter = new FileWriter(file, true);
+	                String userpswd = usernameInput.getText() + "//" + passwordInput.getText();
+	                while(upscanner.hasNextLine()) {
+	                	String info = upscanner.nextLine();
+	                	if(info.equals(userpswd)) {
+	                		exists = true;
+	                	}
+	                }
+	                if(exists) {
+	                	Label warning = new Label("Username already exists");
+	                    GridPane.setConstraints(warning, 9 , 16);
+	                    gpReg.getChildren().add(warning);
+	                }
+	                else {
+	                    try {
+							upwriter.write(userpswd);
+							upwriter.write(newLine);
+		                    upwriter.flush();
+		                    upwriter.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+	                	regStage.close();
+	                    logIn();
+	                	
+	                }
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+        			System.out.println("file not found");
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+            	
+
             }
         });   
-        
         
         
     	
