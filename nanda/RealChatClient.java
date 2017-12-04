@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
@@ -54,7 +55,7 @@ public class RealChatClient extends Application {
 	String newLine = System.getProperty("line.separator");
 
     
-	File file = new File("C:\\Users\\junmin777\\eclipse-workspace\\nanda\\src\\nanda\\userpswd.txt");
+	File file = new File("src\\nanda\\userpswd.txt");
 	FileReader upfr = null;
     BufferedReader upbr = null;
 
@@ -77,7 +78,7 @@ public class RealChatClient extends Application {
 
     private void setUpNetworking() throws Exception {
         @SuppressWarnings("resource")
-        Socket sock = new Socket("127.0.0.1", 4242);
+        Socket sock = new Socket("10.148.32.164", 4242);
         InputStreamReader streamReader = new InputStreamReader(sock.getInputStream());
         reader = new BufferedReader(streamReader);
         writer = new PrintWriter(sock.getOutputStream());
@@ -199,7 +200,7 @@ public class RealChatClient extends Application {
          Label password = new Label("Password:");
          GridPane.setConstraints(password, 8 , 13);
          
-         TextField passwordInput = new TextField();
+         PasswordField passwordInput = new PasswordField();
          passwordInput.setPromptText("password");
          GridPane.setConstraints(passwordInput, 9 , 13);
 
