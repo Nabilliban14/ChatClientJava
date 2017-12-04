@@ -14,6 +14,14 @@ public class ClientInfo {
         this.username = username;
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public ArrayList<String> getFriendsList() {
+        return friendsList;
+    }
+
     public boolean hasFriendsList() {
         Path userPath = Paths.get("src/nanda/Users/" + username);
         if (Files.exists(userPath) && Files.isDirectory(userPath)) {

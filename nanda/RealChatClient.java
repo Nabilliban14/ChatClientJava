@@ -117,12 +117,13 @@ public class RealChatClient extends Application {
         sendMsg.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                writer.println(makeMsg.getText());
+                writer.println(user.username + "¤" + "junminlol" + "¤" +  "junminlol2" + "¤" + makeMsg.getText());
                 writer.flush();
                 makeMsg.setText("");
                 makeMsg.requestFocus();
             }
         });
+
 
         names.getItems().addAll("Nabil", "Jun Min", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3", "Friend #3");
         names.setMinHeight(550);
@@ -174,15 +175,22 @@ public class RealChatClient extends Application {
             String message;
             try {
                 while ((message = reader.readLine()) != null) {
+                    String[] appendedMsg = message.split("¤");
 
-                    sentMsgs.appendText(message + "\n");
+                    for (int i = 0; i < 2; i++) {
+                        if (appendedMsg[i].equals(user.getUsername())) {
+                            sentMsgs.appendText(appendedMsg[appendedMsg.length - 1] + "\n");
+                        }
+                    }
                 }
-            } catch (IOException ex) {
+            }
+            catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
     }
-    
+
+
     private void logIn() {
     	 Stage logInStage = new Stage();
     	
