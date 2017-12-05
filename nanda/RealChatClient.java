@@ -45,14 +45,24 @@ public class RealChatClient extends Application {
 
     ListView <String> names = new ListView<>();
     ListView <String> history = new ListView<>();
+    ArrayList<String> friendsList = new ArrayList<>();
 
     private ClientInfo user;
     private String currentlyTalkingTo = null;
 
-    private String chatHistory = null;
+    private String chatHistory = "";
+    private String myUsername = null;
+
+    private TextField friendName = new TextField();
+    private Button send = new Button ("Add");
+    GridPane gpRequest = new GridPane();
+    ListView<String> Incomingrequests = new ListView<>();
+
+    boolean gotFriendsListFlag = false;
 
     private TextArea sentMsgs;
     GridPane gpLogin = new GridPane();
+    GridPane gpFriendRequests = new GridPane();
     GridPane gpOutput = new GridPane();
     GridPane gpFriends = new GridPane();
     GridPane gpLayout = new GridPane();
@@ -72,6 +82,7 @@ public class RealChatClient extends Application {
     static private BufferedReader reader;
 
     private TabPane tabPane = new TabPane();
+    private TabPane tpRequests =  new TabPane();
 
     private TextArea makeMsg;
 
@@ -125,12 +136,13 @@ public class RealChatClient extends Application {
         sendMsg.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                String msg = user.getUsername() + "|";
+                String msg = "A"; //indicates a sent msg
 
-                ArrayList<String> friendsList = user.getFriendsList();
+                msg += myUsername + "|";
+
                 //for (int i = 0; i < friendsList.size(); i++) {
-                    msg += currentlyTalkingTo + "|";
-                //}
+                msg += currentlyTalkingTo + "|";
+
 
                 System.out.println(msg);
                 msg += "_" + makeMsg.getText();
@@ -142,66 +154,70 @@ public class RealChatClient extends Application {
             }
         });
 
-
-        names.getItems().addAll(user.getFriendsList());
+        while (!gotFriendsListFlag){};
+        names.getItems().addAll(friendsList);
         names.setMinHeight(550);
 
         names.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (oldValue == null) {
+                    writer.println("C" + myUsername + "|" + "_" + newValue + "_" + chatHistory);
+                    writer.flush();
+                }
+                else {
+                    writer.println("C" + myUsername + "|" + oldValue + "|" + "_" + newValue + "_" + chatHistory);
+                    writer.flush();
+                }
+
                 currentlyTalkingTo = newValue;
-
-                if (chatHistory != null) {
-                    File file = new File("src/nanda/Users/" + user.getUsername() + "/ChatHistory/" + oldValue + ".txt");
-                    FileWriter fileWriter = null;
-                    try {
-                        fileWriter = new FileWriter(file, true);
-                        fileWriter.write(chatHistory);
-                        fileWriter.close();
-                    }
-                    catch (IOException e) {
-                        System.out.println("cannot save chatHistory for " + oldValue);
-                    }
-                }
-
                 chatHistory = "";
-
-                File file = new File("src/nanda/Users/" + user.getUsername() + "/ChatHistory/" + newValue + ".txt");
-                Scanner sc = null;
-                try {
-                    sc = new Scanner(file);
-                    sentMsgs.clear();
-                    while(sc.hasNext()) {
-                        sentMsgs.appendText(sc.nextLine() + "\r\n");
-                    }
-                }
-                catch (FileNotFoundException e) {
-                    System.out.println("cannot load chatHistory for " + newValue);
-                }
             }
         });
 
         history.getItems().addAll("Nerd Squad", "ECE homies", "Sports club");
         history.setMinHeight(550);
 
-        Tab friendsList = new Tab("Friends List");
-        friendsList.setClosable(false);
-        friendsList.setContent(names);
-        friendsList.setStyle("-fx-font-size: 13pt;");
+        Tab friends = new Tab("Friends List");
+        friends.setClosable(false);
+        friends.setContent(names);
+        friends.setStyle("-fx-font-size: 13pt;");
         Tab chatHistory = new Tab("Group Chats");
         chatHistory.setClosable(false);
         chatHistory.setContent(history);
         chatHistory.setStyle("-fx-font-size: 13pt;");
 
-        tabPane.getTabs().addAll(friendsList,chatHistory);
+        tabPane.getTabs().addAll(friends,chatHistory);
+
+        friendName.setPrefSize(160, 50);
+        send.setPrefSize(75, 50);
+        gpRequest.addRow(0, friendName, send);
+
+        Tab add = new Tab("Add Friends");
+        add.setClosable(false);
+        add.setContent(gpRequest);
+        add.setStyle("-fx-font-size: 11.2pt;");
+
+        Incomingrequests.setPrefSize(235, 50);
+        Incomingrequests.getItems().addAll("test");
+
+        Tab requests = new Tab("Friend Requests");
+        requests.setClosable(false);
+        requests.setContent(Incomingrequests);
+        requests.setStyle("-fx-font-size: 11.2pt;");
+
+        tpRequests.getTabs().addAll(add,requests);
+        tpRequests.setMinWidth(220);
 
         gpLayout.add(gpOutput,0,0);
         gpLayout.add(gpFriends, 1, 0);
         gpLayout.add(gpTypeMsg, 0, 575);
+        gpLayout.add(gpFriendRequests, 1, 575);
 
         gpOutput.add(sentMsgs, 0, 0);
         gpFriends.addColumn(0, tabPane);
         gpTypeMsg.addRow(0, makeMsg, sendMsg);
+        gpFriendRequests.add(tpRequests, 0, 0);
         //gpLayout.add(sendMsg, 480, 575);
 
         chatClientStage.setTitle("The Best Chat Client Ever");
@@ -213,6 +229,77 @@ public class RealChatClient extends Application {
         run();
         logIn();
 
+    }
+
+    private void incomingMessage(String message) {
+        String sender = "";
+        boolean foundSender = false;
+        boolean currentConvo = false;
+        int number = -1;
+        boolean myMsg = false;
+        HashSet<String> usernames = new HashSet<>();
+        String username = "";
+        for (int i = 0; i < message.length(); i++) {
+            if (Character.toString(message.charAt(i)).equals("_")) {
+                number = i + 1;
+                break;
+            }
+            else if (Character.toString(message.charAt(i)).equals("|")) {
+                usernames.add(username);
+                if (foundSender == false) {
+                    sender = username;
+                    foundSender = true;
+                }
+                username = "";
+            }
+            else {
+                username += Character.toString(message.charAt(i));
+            }
+        }
+        if (usernames.contains(myUsername) && !(usernames.contains(currentlyTalkingTo)) && number != -1) {
+            File file = new File("src/nanda/Users/" + myUsername + "/ChatHistory/" + sender + ".txt");
+            FileWriter fileWriter = null;
+            try {
+                fileWriter = new FileWriter(file, true);
+                fileWriter.write(message.substring(number, message.length()) + "\r\n");
+                fileWriter.close();
+            }
+            catch (IOException e) {
+                System.out.println("cannot save chatHistory for " + currentlyTalkingTo + " in IncomingReader.");
+            }
+        }
+        else if (usernames.contains(myUsername) && usernames.contains(currentlyTalkingTo) && number != -1) {
+            sentMsgs.appendText(message.substring(number, message.length()) + "\r\n");
+            chatHistory += message.substring(number, message.length()) + "\r\n";
+        }
+    }
+
+    private void setFriendsList(String message) {
+        String username = "";
+        for (int i = 0; i < message.length(); i++) {
+            if (message.charAt(i) == '|') {
+                friendsList.add(username);
+                username = "";
+            }
+            else {
+                username += Character.toString(message.charAt(i));
+            }
+        }
+        gotFriendsListFlag = true;
+    }
+
+    private void outputMsg(String message) {
+        sentMsgs.clear();
+        String outputMsg = "";
+        for (int i = 0; i < message.length(); i++) {
+            if (message.charAt(i) == 'î') {
+                outputMsg += "\r\n";
+            }
+            else {
+                outputMsg += message.charAt(i);
+            }
+        }
+        sentMsgs.appendText(outputMsg);
     }
 /*
     public static void main(String[] args) {
@@ -227,46 +314,18 @@ public class RealChatClient extends Application {
         public void run() {
             String message;
             try {
-                while ((message = reader.readLine()) != null) {
-                    String sender = "";
-                    boolean foundSender = false;
-                    boolean currentConvo = false;
-                    int number = -1;
-                    boolean myMsg = false;
-                    HashSet<String> usernames = new HashSet<>();
-                    String username = "";
-                    for (int i = 0; i < message.length(); i++) {
-                        if (Character.toString(message.charAt(i)).equals("_")) {
-                            number = i + 1;
-                            break;
-                        }
-                        else if (Character.toString(message.charAt(i)).equals("|")) {
-                            usernames.add(username);
-                            if (foundSender == false) {
-                                sender = username;
-                                foundSender = true;
-                            }
-                            username = "";
-                        }
-                        else {
-                            username += Character.toString(message.charAt(i));
-                        }
+                while ((message = reader.readLine()) != null ) {
+                    //indicates incoming message
+                    if (message.charAt(0) == 'A') {
+                        incomingMessage(message.substring(1, message.length()));
                     }
-                    if (usernames.contains(user.getUsername()) && !(usernames.contains(currentlyTalkingTo)) && number != -1) {
-                        File file = new File("src/nanda/Users/" + user.getUsername() + "/ChatHistory/" + sender + ".txt");
-                        FileWriter fileWriter = null;
-                        try {
-                            fileWriter = new FileWriter(file, true);
-                            fileWriter.write(message.substring(number, message.length()) + "\r\n");
-                            fileWriter.close();
-                        }
-                        catch (IOException e) {
-                            System.out.println("cannot save chatHistory for " + currentlyTalkingTo + " in IncomingReader.");
-                        }
+                    //create friendsList
+                    else if (message.charAt(0) == 'B') {
+                        setFriendsList(message.substring(1, message.length()));
                     }
-                    else if (usernames.contains(user.getUsername()) && usernames.contains(currentlyTalkingTo) && number != -1) {
-                        sentMsgs.appendText(message.substring(number, message.length()) + "\r\n");
-                        chatHistory += message.substring(number, message.length()) + "\r\n";
+                    //load Message
+                    else if (message.charAt(0) == 'C') {
+                        outputMsg(message.substring(1, message.length()));
                     }
                 }
             }
@@ -314,7 +373,7 @@ public class RealChatClient extends Application {
          startButton.setOnAction(new EventHandler<ActionEvent>() {
              @Override
              public void handle(ActionEvent event) {
-            	 user = new ClientInfo(usernameInput.getText());
+            	 myUsername = usernameInput.getText();
             	 try {
             		boolean match = false;
 					Scanner upscanner = new Scanner(file);
@@ -324,6 +383,8 @@ public class RealChatClient extends Application {
 	            		if(tempup.equals(enteredup)) {match = true;}
 	            	}
 	            	if(match) {
+	            	    writer.println("B" + myUsername);
+	            	    writer.flush();
 	                    logInStage.close();
 	                    chatClient();
 	            	}
