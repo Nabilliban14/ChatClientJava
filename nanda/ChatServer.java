@@ -45,16 +45,68 @@ public class ChatServer extends Observable {
 			}
 		}
 
-		public synchronized void run() {
+		public void run() {
 			String message;
 			try {
 				while ((message = reader.readLine()) != null) {
-
+					System.out.println(message.charAt(0));
 					//Msg Sent
 					if (message.charAt(0) == 'A') {
-						System.out.println("server read "+message);
+						String msg = message.substring(1, message.length());
+						HashSet<String> usernames = new HashSet<>();
+						String username = "";
+						String sender = "";
+						boolean foundSender = false;
+						for (int i = 0; i < msg.length(); i++) {
+							if (msg.charAt(i) == '|' && foundSender == false) {
+								sender = username;
+								username = "";
+								foundSender = true;
+							}
+							else if (msg.charAt(i) == '|') {
+								usernames.add(username);
+								username = "";
+							}
+							else if (msg.charAt(i) == '_') {
+								msg = msg.substring(i+1, msg.length());
+								break;
+							}
+							else {
+								username += Character.toString(msg.charAt(i));
+							}
+						}
+
+						//writes to sender's chatHistories
+						for (String receiver: usernames) {
+							File file = new File("src/nanda/Users/" + sender + "/ChatHistory/" + receiver + ".txt");
+							FileWriter fileWriter = null;
+							try {
+								fileWriter = new FileWriter(file, true);
+								fileWriter.write(msg + "\r\n");
+								fileWriter.close();
+							}
+							catch (IOException e) {
+								System.out.println("cannot save chatHistory for " + receiver);
+							}
+						}
+
+						//writes to receiver's chatHistories
+						for (String receiver: usernames) {
+							File file = new File("src/nanda/Users/" + receiver + "/ChatHistory/" + sender + ".txt");
+							FileWriter fileWriter = null;
+							try {
+								fileWriter = new FileWriter(file, true);
+								fileWriter.write(msg + "\r\n");
+								fileWriter.close();
+							}
+							catch (IOException e) {
+								System.out.println("cannot save chatHistory for asdsafgsafgsafg " + receiver);
+							}
+						}
+
 						setChanged();
-						notifyObservers("A" + message.substring(1, message.length()));
+						notifyObservers(message);
+
 					}
 
 					//Create user and get friendsList
@@ -73,7 +125,7 @@ public class ChatServer extends Observable {
 						notifyObservers(friends);
 					}
 
-					//save and load chatHistory
+					//load chatHistory
 					else if (message.charAt(0) == 'C') {
 
 						message = message.substring(1, message.length());
@@ -101,29 +153,15 @@ public class ChatServer extends Observable {
 								break;
 							}
 							else {
-								loader += msg.charAt(i);
+								loader += Character.toString(msg.charAt(i));
 							}
 						}
 
-
-						for (int i = 1; i < friendsList.size(); i++) {
-							File file = new File("src/nanda/Users/" + friendsList.get(0) + "/ChatHistory/" + friendsList.get(i) + ".txt");
-							FileWriter fileWriter = null;
-							try {
-								fileWriter = new FileWriter(file, true);
-								fileWriter.write(msg);
-								fileWriter.close();
-							}
-							catch (IOException e) {
-								System.out.println("cannot save chatHistory for " + friendsList.get(i));
-							}
-						}
-
-						String loadedMsg = "C";
+						String loadedMsg = "";
 						File file = new File("src/nanda/Users/" + friendsList.get(0) + "/ChatHistory/" + loader + ".txt");
 
 
-						System.out.println(friendsList.get(0) + " " + loader);
+						//System.out.println(friendsList.get(0) + " " + loader);
 						Scanner sc = null;
 						try {
 							sc = new Scanner(file);
@@ -136,7 +174,7 @@ public class ChatServer extends Observable {
 						}
 
 						setChanged();
-						notifyObservers(loadedMsg);
+						notifyObservers("C" + friendsList.get(0) + "_" + loadedMsg);
 
 					}
 				}

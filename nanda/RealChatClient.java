@@ -2,6 +2,7 @@
 
 package nanda;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -144,8 +145,10 @@ public class RealChatClient extends Application {
                 msg += currentlyTalkingTo + "|";
 
 
-                System.out.println(msg);
                 msg += "_" + makeMsg.getText();
+                System.out.println(msg);
+
+
 
                 writer.println(msg);
                 writer.flush();
@@ -232,45 +235,36 @@ public class RealChatClient extends Application {
     }
 
     private void incomingMessage(String message) {
-        String sender = "";
-        boolean foundSender = false;
-        boolean currentConvo = false;
-        int number = -1;
-        boolean myMsg = false;
+        String msg = message;
         HashSet<String> usernames = new HashSet<>();
         String username = "";
-        for (int i = 0; i < message.length(); i++) {
-            if (Character.toString(message.charAt(i)).equals("_")) {
-                number = i + 1;
-                break;
+        String sender = "";
+        boolean foundSender = false;
+        for (int i = 0; i < msg.length(); i++) {
+            if (msg.charAt(i) == '|' && foundSender == false) {
+                sender = username;
+                username = "";
+                foundSender = true;
             }
-            else if (Character.toString(message.charAt(i)).equals("|")) {
+            else if (msg.charAt(i) == '|') {
                 usernames.add(username);
-                if (foundSender == false) {
-                    sender = username;
-                    foundSender = true;
-                }
                 username = "";
             }
+            else if (msg.charAt(i) == '_') {
+                msg = msg.substring(i+1, msg.length());
+                break;
+            }
             else {
-                username += Character.toString(message.charAt(i));
+                username += Character.toString(msg.charAt(i));
             }
         }
-        if (usernames.contains(myUsername) && !(usernames.contains(currentlyTalkingTo)) && number != -1) {
-            File file = new File("src/nanda/Users/" + myUsername + "/ChatHistory/" + sender + ".txt");
-            FileWriter fileWriter = null;
-            try {
-                fileWriter = new FileWriter(file, true);
-                fileWriter.write(message.substring(number, message.length()) + "\r\n");
-                fileWriter.close();
-            }
-            catch (IOException e) {
-                System.out.println("cannot save chatHistory for " + currentlyTalkingTo + " in IncomingReader.");
-            }
-        }
-        else if (usernames.contains(myUsername) && usernames.contains(currentlyTalkingTo) && number != -1) {
-            sentMsgs.appendText(message.substring(number, message.length()) + "\r\n");
-            chatHistory += message.substring(number, message.length()) + "\r\n";
+
+        System.out.println(myUsername);
+        System.out.println(sender);
+
+        if (sender.equals(myUsername) && usernames.contains(currentlyTalkingTo) ||
+                (sender.equals(currentlyTalkingTo) & usernames.contains(myUsername))) {
+            sentMsgs.appendText(msg + "\r\n");
         }
     }
 
@@ -289,17 +283,30 @@ public class RealChatClient extends Application {
     }
 
     private void outputMsg(String message) {
-        sentMsgs.clear();
-        String outputMsg = "";
+        String client = "";
         for (int i = 0; i < message.length(); i++) {
-            if (message.charAt(i) == 'î') {
-                outputMsg += "\r\n";
+            if (message.charAt(i) == '_') {
+                message = message.substring(i + 1, message.length());
+                break;
             }
             else {
-                outputMsg += message.charAt(i);
+                client += message.charAt(i);
             }
         }
-        sentMsgs.appendText(outputMsg);
+
+        if (myUsername.equals(client)) {
+            sentMsgs.clear();
+            String outputMsg = "";
+            for (int i = 0; i < message.length(); i++) {
+                if (message.charAt(i) == 'î') {
+                    outputMsg += "\r\n";
+                }
+                else {
+                    outputMsg += message.charAt(i);
+                }
+            }
+            sentMsgs.appendText(outputMsg);
+        }
     }
 /*
     public static void main(String[] args) {
@@ -315,6 +322,7 @@ public class RealChatClient extends Application {
             String message;
             try {
                 while ((message = reader.readLine()) != null ) {
+
                     //indicates incoming message
                     if (message.charAt(0) == 'A') {
                         incomingMessage(message.substring(1, message.length()));
