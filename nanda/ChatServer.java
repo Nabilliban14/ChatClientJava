@@ -1,6 +1,5 @@
 package nanda;
 
-import com.sun.deploy.util.SessionState;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -128,7 +127,7 @@ public class ChatServer extends Observable {
 						try {
 							sc = new Scanner(file);
 							while(sc.hasNextLine()) {
-								loadedMsg += sc.nextLine() + "Ã®";
+								loadedMsg += sc.nextLine() + "î";
 							}
 						}
 						catch (FileNotFoundException e) {

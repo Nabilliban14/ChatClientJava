@@ -19,6 +19,8 @@ import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -78,8 +80,12 @@ public class RealChatClient extends Application {
 	File file = new File("src\\nanda\\userpswd.txt");
 	FileReader upfr = null;
     BufferedReader upbr = null;
+    
+    Media notification = new Media("file:///C://Users//junmin777//eclipse-workspace//nanda//src//notification.mp3");
+    Media intro = new Media("file:///C://Users//junmin777//eclipse-workspace//nanda//src//intro.mp3");
 
-
+    MediaPlayer notificationPlayer; 
+    MediaPlayer introPlayer;
     static private PrintWriter writer;
     static private BufferedReader reader;
 
@@ -122,6 +128,7 @@ public class RealChatClient extends Application {
         sentMsgs.setEditable(false);
         sentMsgs.setPrefHeight(577);
         sentMsgs.setPrefWidth(580);
+        sentMsgs.setStyle("-fx-base: #2356A9");
         //sentMsgs.setPrefHeight();
 
         makeMsg = new TextArea();
@@ -132,6 +139,7 @@ public class RealChatClient extends Application {
         makeMsg.setEditable(true);
 
         Button sendMsg = new Button("Send");
+        sendMsg.setStyle("-fx-base: #1156A9");
         sendMsg.setPrefHeight(75);
         sendMsg.setPrefWidth(100);
 
@@ -142,13 +150,12 @@ public class RealChatClient extends Application {
 
                 msg += myUsername + "|";
 
-                //for (int i = 0; i < friendsList.size(); i++) {
                 msg += currentlyTalkingTo + "|";
 
 
                 System.out.println(msg);
                 msg += "_" + makeMsg.getText();
-
+             
                 writer.println(msg);
                 writer.flush();
                 makeMsg.setText("");
@@ -184,21 +191,29 @@ public class RealChatClient extends Application {
         friends.setClosable(false);
         friends.setContent(names);
         friends.setStyle("-fx-font-size: 13pt;");
+        friends.setStyle("-fx-base: #FCCD5F");
         Tab chatHistory = new Tab("Group Chats");
         chatHistory.setClosable(false);
         chatHistory.setContent(history);
         chatHistory.setStyle("-fx-font-size: 13pt;");
-
+        chatHistory.setStyle("-fx-base: #FCCD5F");
+        
         tabPane.getTabs().addAll(friends,chatHistory);
-
+        tabPane.setStyle("-fx-base: #B4CEF8");
         friendName.setPrefSize(160, 50);
         send.setPrefSize(75, 50);
+        send.setStyle("-fx-base: #1156A9");
+
         gpRequest.addRow(0, friendName, send);
 
         Tab add = new Tab("Add Friends");
         add.setClosable(false);
         add.setContent(gpRequest);
         add.setStyle("-fx-font-size: 11.2pt;");
+        add.setStyle("-fx-base: #FCCD5F");
+        
+        friendName.setStyle("-fx-base: #FFFFFF");
+
 
         Incomingrequests.setPrefSize(235, 50);
         Incomingrequests.getItems().addAll("test");
@@ -207,9 +222,13 @@ public class RealChatClient extends Application {
         requests.setClosable(false);
         requests.setContent(Incomingrequests);
         requests.setStyle("-fx-font-size: 11.2pt;");
+        requests.setStyle("-fx-base: #FCCD5F");
+
 
         tpRequests.getTabs().addAll(add,requests);
         tpRequests.setMinWidth(220);
+        tpRequests.setStyle("-fx-base: #B4CEF8");
+
 
         gpLayout.add(gpOutput,0,0);
         gpLayout.add(gpFriends, 1, 0);
@@ -225,6 +244,7 @@ public class RealChatClient extends Application {
         chatClientStage.setTitle("The Best Chat Client Ever");
         chatClientStage.setScene(scene);
         chatClientStage.show();
+
         
         makeMsg.setOnKeyPressed(new EventHandler<KeyEvent>()
         {
@@ -233,7 +253,20 @@ public class RealChatClient extends Application {
             {
             	if (ke.getCode().equals(KeyCode.ENTER))
                 {
-            		//place the send code
+                    String msg = "A"; //indicates a sent msg
+
+                    msg += myUsername + "|";
+
+                    msg += currentlyTalkingTo + "|";
+
+
+                    System.out.println(msg);
+                    msg += "_" + makeMsg.getText();
+
+                    writer.println(msg);
+                    writer.flush();
+                    makeMsg.setText("");
+                    makeMsg.requestFocus();
                 	ke.consume();
                 }
                 
@@ -242,6 +275,8 @@ public class RealChatClient extends Application {
     }
 
     public void start(Stage primaryStage) throws Exception{
+        introPlayer = new MediaPlayer(intro);
+        introPlayer.setAutoPlay(true);
         run();
         logIn();
 
@@ -308,7 +343,7 @@ public class RealChatClient extends Application {
         sentMsgs.clear();
         String outputMsg = "";
         for (int i = 0; i < message.length(); i++) {
-            if (message.charAt(i) == 'Ã®') {
+            if (message.charAt(i) == 'î') {
                 outputMsg += "\r\n";
             }
             else {
@@ -333,6 +368,8 @@ public class RealChatClient extends Application {
                 while ((message = reader.readLine()) != null ) {
                     //indicates incoming message
                     if (message.charAt(0) == 'A') {
+                    	notificationPlayer = new MediaPlayer(notification);
+                    	notificationPlayer.setAutoPlay(true);
                         incomingMessage(message.substring(1, message.length()));
                     }
                     //create friendsList
@@ -354,11 +391,13 @@ public class RealChatClient extends Application {
 
     private void logIn() {
     	 Stage logInStage = new Stage();
-    	
+    	 
     	 GridPane gpLogin = new GridPane();
          gpLogin.setPadding( new Insets(10, 10, 10, 10));
          gpLogin.setVgap(10);
          gpLogin.setHgap(10);
+         gpLogin.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #5AA9FF, #432a33)");
+
          
          Label username = new Label("Username:");
          GridPane.setConstraints(username, 8 , 12);
@@ -429,6 +468,43 @@ public class RealChatClient extends Application {
          logInStage.setScene(sc);
          logInStage.show();
     	
+         passwordInput.setOnKeyPressed(new EventHandler<KeyEvent>()
+         {
+             @Override
+             public void handle(KeyEvent ke)
+             {
+             	if (ke.getCode().equals(KeyCode.ENTER))
+                 {
+               	 myUsername = usernameInput.getText();
+               	 try {
+               		boolean match = false;
+   					Scanner upscanner = new Scanner(file);
+   	            	String enteredup = usernameInput.getText() + "//" + passwordInput.getText();
+   	            	while (upscanner.hasNextLine()) {
+   	            		String tempup = upscanner.nextLine();
+   	            		if(tempup.equals(enteredup)) {match = true;}
+   	            	}
+   	            	if(match) {
+   	            	    writer.println("B" + myUsername);
+   	            	    writer.flush();
+   	                    logInStage.close();
+   	                    chatClient();
+   	                    ke.consume();
+   	            	}
+   	            	else {
+   	            		Label warning = new Label("username/pswd not found");
+   	                    GridPane.setConstraints(warning, 9 , 17);
+   	                    gpLogin.getChildren().add(warning);
+   	            	}
+   				} catch (FileNotFoundException e) {
+   					// TODO Auto-generated catch block
+   					System.out.println("file not found");
+   					e.printStackTrace();
+   				}
+                 }
+                 
+             }
+         });
     }
 
     
