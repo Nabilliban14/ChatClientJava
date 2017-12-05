@@ -19,6 +19,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -156,6 +158,20 @@ public class RealChatClient extends Application {
         chatClientStage.setTitle("The Best Chat Client Ever");
         chatClientStage.setScene(scene);
         chatClientStage.show();
+        
+        makeMsg.setOnKeyPressed(new EventHandler<KeyEvent>()
+        {
+            @Override
+            public void handle(KeyEvent ke)
+            {
+            	if (ke.getCode().equals(KeyCode.ENTER))
+                {
+            		//place the send code
+                	ke.consume();
+                }
+                
+            }
+        });
     }
 
     public void start(Stage primaryStage) throws Exception{
