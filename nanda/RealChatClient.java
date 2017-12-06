@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -82,8 +83,8 @@ public class RealChatClient extends Application {
 	FileReader upfr = null;
     BufferedReader upbr = null;
     
-    Media notification = new Media("file:///C://Users//junmin777//eclipse-workspace//nanda//src//notification.mp3");
-    Media intro = new Media("file:///C://Users//junmin777//eclipse-workspace//nanda//src//intro.mp3");
+    //Media notification = new Media("src//notification.mp3");
+    //Media intro = new Media("src//intro.mp3");
 
     MediaPlayer notificationPlayer; 
     MediaPlayer introPlayer;
@@ -184,6 +185,26 @@ public class RealChatClient extends Application {
             }
         });
 
+        send.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                String name = "";
+                name += friendName.getText();
+                if (name != "") {
+                    writer.println("D" + myUsername + "|" + name);
+                    writer.flush();
+                }
+            }
+        });
+
+        Incomingrequests.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                String msg = "F" + myUsername + "|" + newValue;
+                writer.print(msg);
+                writer.flush();
+            }
+        });
         history.getItems().addAll("Nerd Squad", "ECE homies", "Sports club");
         history.setMinHeight(550);
 
@@ -217,6 +238,8 @@ public class RealChatClient extends Application {
 
         Incomingrequests.setPrefSize(235, 50);
         Incomingrequests.getItems().addAll("test");
+
+
 
         Tab requests = new Tab("Friend Requests");
         requests.setClosable(false);
@@ -275,8 +298,8 @@ public class RealChatClient extends Application {
     }
 
     public void start(Stage primaryStage) throws Exception{
-        introPlayer = new MediaPlayer(intro);
-        introPlayer.setAutoPlay(true);
+        //introPlayer = new MediaPlayer(intro);
+        //introPlayer.setAutoPlay(true);
         run();
         logIn();
 
@@ -356,6 +379,56 @@ public class RealChatClient extends Application {
             sentMsgs.appendText(outputMsg);
         }
     }
+
+    private void loadFriendRequests(String receiver, ArrayList<String> requesters) {
+        if (myUsername.equals(receiver)) {
+            Incomingrequests.getItems().clear();
+            Incomingrequests.getItems().addAll(requesters);
+        }
+    }
+
+    private void getFriendRequests(String receiver) {
+        writer.println("E" + receiver);
+        writer.flush();
+    }
+
+    private void sortRequests (String message) {
+        String receiver = "";
+        boolean foundReceiver = false;
+        ArrayList<String> requesters = new ArrayList<>();
+        String username = "";
+        for (int i = 0; i < message.length(); i++) {
+            if (message.charAt(i) == '|' && foundReceiver == false) {
+                receiver = username;
+                foundReceiver = true;
+                username = "";
+            }
+            else if (message.charAt(i) == '|') {
+                requesters.add(username);
+                username = "";
+            }
+            else {
+                username += message.charAt(i);
+            }
+        }
+        loadFriendRequests(receiver, requesters);
+    }
+
+    private void updateFriends(String message) {
+        String acceptor = "";
+        String requestor = "";
+        for (int i = 0; i < message.length(); i++) {
+            if (message.charAt(i) == '|') {
+                requestor = message.substring(i+1, message.length());
+                break;
+            }
+            else {
+                acceptor += message.charAt(i);
+            }
+        }
+        names.getItems().add(requestor);
+        getFriendRequests(acceptor);
+    }
 /*
     public static void main(String[] args) {
         try {
@@ -373,8 +446,8 @@ public class RealChatClient extends Application {
 
                     //indicates incoming message
                     if (message.charAt(0) == 'A') {
-                    	notificationPlayer = new MediaPlayer(notification);
-                    	notificationPlayer.setAutoPlay(true);
+                    	//notificationPlayer = new MediaPlayer(notification);
+                    	//notificationPlayer.setAutoPlay(true);
                         incomingMessage(message.substring(1, message.length()));
                     }
                     //create friendsList
@@ -384,6 +457,16 @@ public class RealChatClient extends Application {
                     //load Message
                     else if (message.charAt(0) == 'C') {
                         outputMsg(message.substring(1, message.length()));
+                    }
+                    //update Friend Requests
+                    else if (message.charAt(0) == 'D') {
+                        getFriendRequests(message.substring(1, message.length()));
+                    }
+                    else if (message.charAt(0) == 'E') {
+                        sortRequests(message.substring(1, message.length()));
+                    }
+                    else if (message.charAt(0) == 'F') {
+                        updateFriends(message.substring(1, message.length()));
                     }
                 }
             }

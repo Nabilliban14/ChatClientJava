@@ -2,12 +2,10 @@ package nanda;
 
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Observable;
-import java.util.Scanner;
+import java.util.*;
 
 public class ChatServer extends Observable {
 	HashSet<ClientInfo> clients;
@@ -175,6 +173,112 @@ public class ChatServer extends Observable {
 						setChanged();
 						notifyObservers("C" + friendsList.get(0) + "_" + loadedMsg);
 
+					}
+					else if (message.charAt(0) == 'D') {
+						message = message.substring(1, message.length());
+						String requester = "";
+						String receiver = "";
+						for (int i = 0; i < message.length(); i++) {
+							if (message.charAt(i) == '|') {
+								receiver = message.substring(i+1, message.length());
+								break;
+							}
+							else {
+								requester += message.charAt(i);
+							}
+						}
+
+						/* write it in friendRequest File */
+						File file = new File("src/nanda/Users/" + receiver + "/friendRequests.txt");
+						FileWriter fileWriter = null;
+						try {
+							fileWriter = new FileWriter(file, true);
+							fileWriter.write(requester + "\r\n");
+							fileWriter.close();
+						}
+						catch (IOException e) {
+							System.out.println("cannot save chatHistory for asdsafgsafgsafg " + receiver);
+						}
+
+						setChanged();
+						notifyObservers("D" + receiver);
+
+					}
+					else if (message.charAt(0) == 'E') {
+						String listOfRequesters = message + "|";
+						File file = new File("src/nanda/Users/" + message.substring(1, message.length()) + "/friendRequests.txt");
+						Scanner sc = null;
+						try {
+							sc = new Scanner(file);
+							while (sc.hasNextLine()) {
+								listOfRequesters += sc.nextLine() + "|";
+							}
+						}
+						catch (FileNotFoundException e) {
+							System.out.println("file not found");
+						}
+						setChanged();
+						notifyObservers(listOfRequesters);
+					}
+					else if (message.charAt(0) == 'F') {
+						message = message.substring(1, message.length());
+						String acceptor = "";
+						String requester = "";
+						for (int i = 0; i < message.length(); i++) {
+							if (message.charAt(0) == '|') {
+								requester = message.substring(i+1, message.length());
+							}
+							else {
+								acceptor += message.charAt(i);
+							}
+						}
+
+						LinkedHashSet<String> requests = new LinkedHashSet<>();
+
+						/* get all requests */
+						File file = new File("src/nanda/Users/" + acceptor + "/friendRequests.txt");
+						Scanner sc = null;
+						try {
+							sc = new Scanner(file);
+							while (sc.hasNextLine()) {
+								requests.add(sc.nextLine());
+							}
+						}
+						catch (FileNotFoundException e) {
+							System.out.println("file not found");
+						}
+
+						/* write accepted request to friends list */
+						file = new File("sec/nanda/Users/" + acceptor + "/friendsList.txt");
+						FileWriter fileWriter = null;
+						try {
+							fileWriter = new FileWriter(file, true);
+							fileWriter.write(requester + "\r\n");
+							fileWriter.close();
+						}
+						catch (IOException e) {
+							System.out.println("cannot save chatHistory for asdsafgsafgsafg ZZZZZ");
+						}
+
+						/* remove the accepted request */
+						requests.remove(requester);
+
+						file = new File("src/nanda/Users/" + acceptor + "/friendRequests.txt");
+						fileWriter = null;
+						try {
+							fileWriter = new FileWriter(file);
+							for (String req: requests) {
+								fileWriter.write(req + "\r\n");
+							}
+							fileWriter.close();
+						}
+						catch (IOException e) {
+							System.out.println("cannot save chatHistory for asdsafgsafgsafg 131313");
+						}
+
+
+						setChanged();
+						notifyObservers("F" + acceptor + "|" + requester);
 					}
 				}
 			} catch (IOException e) {
