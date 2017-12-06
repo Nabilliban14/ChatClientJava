@@ -126,8 +126,9 @@ public class ClientMain extends Application {
     }
 
     private void chatClient() {
-
+    	System.out.println("129");
         Stage chatClientStage = new Stage();
+        System.out.println("130");
         Scene scene = new Scene (gpLayout, 800, 650);
 
         gpLayout.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #1FF9FF, #432a33)");
@@ -275,6 +276,7 @@ public class ClientMain extends Application {
 
         chatClientStage.setTitle("The Best Chat Client Ever");
         chatClientStage.setScene(scene);
+        System.out.println("278");
         chatClientStage.show();
 
         
@@ -525,8 +527,15 @@ public class ClientMain extends Application {
 	            	if(match) {
 	            	    writer.println("B" + myUsername);
 	            	    writer.flush();
+	            	    System.out.println("528");
 	                    logInStage.close();
+	                    System.out.println("531");
+	                    int j = 0;
+	                    for (int i = 0; i < 100000; i++) {
+	                    	j++;
+	                    }
 	                    chatClient();
+	                    System.out.println("537");
 	            	}
 	            	else {
 	            		Label warning = new Label("username/pswd not found");
@@ -552,7 +561,7 @@ public class ClientMain extends Application {
          logInStage.setTitle("The Best Chat Client Ever");
          logInStage.setScene(sc);
          logInStage.show();
-    	
+    
          passwordInput.setOnKeyPressed(new EventHandler<KeyEvent>()
          {
              @Override
