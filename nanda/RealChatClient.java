@@ -20,6 +20,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
@@ -47,6 +48,9 @@ import java.util.Scanner;
 
 
 public class RealChatClient extends Application {
+
+    TextField groupPeeps;
+    Label enterGroup;
 	
 
     ListView <String> names = new ListView<>();
@@ -55,6 +59,8 @@ public class RealChatClient extends Application {
 
     private ClientInfo user;
     private String currentlyTalkingTo = null;
+
+    private Button createGroup = new Button("+ Create Group Chat");
 
     private String chatHistory = "";
     private String myUsername = null;
@@ -116,9 +122,47 @@ public class RealChatClient extends Application {
         readerThread.start();
     }
 
+    private void createGroupChat() {
+        Stage groupStage = new Stage();
+
+        GridPane gp = new GridPane();
+        gp.setPadding( new Insets(10, 10, 10, 10));
+        gp.setVgap(10);
+        gp.setHgap(10);
+        gp.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #5AA9FF, #432a33)");
+
+        enterGroup = new Label("Enter Participants:");
+        GridPane.setConstraints(enterGroup, 8 , 12);
+
+        groupPeeps = new TextField();
+        GridPane.setConstraints(groupPeeps, 9, 12);
+
+        Button creatingGroup = new Button("Create");
+        GridPane.setConstraints(creatingGroup, 9, 13);
+
+        creatingGroup.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                writer.println("G" + groupPeeps.getText());
+                writer.flush();
+            }
+        });
+
+        gp.addRow(0, enterGroup, groupPeeps);
+        gp.add(creatingGroup,1,1);
+
+        Scene sc = new Scene(gp, 400, 400);
+
+        groupStage.setTitle("Adding Group Members");
+        groupStage.setScene(sc);
+        groupStage.show();
+
+    }
+
     private void chatClient() {
 
         Stage chatClientStage = new Stage();
+        chatClientStage.resizableProperty().setValue(Boolean.FALSE);
         Scene scene = new Scene (gpLayout, 800, 650);
 
         gpLayout.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #1FF9FF, #432a33)");
@@ -128,7 +172,7 @@ public class RealChatClient extends Application {
 
         sentMsgs = new TextArea();
         sentMsgs.setEditable(false);
-        sentMsgs.setPrefHeight(577);
+        sentMsgs.setPrefHeight(600);
         sentMsgs.setPrefWidth(580);
         sentMsgs.setStyle("-fx-base: #2356A9");
         //sentMsgs.setPrefHeight();
@@ -164,6 +208,13 @@ public class RealChatClient extends Application {
             }
         });
 
+        createGroup.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                createGroupChat();
+            }
+        });
+
         while (!gotFriendsListFlag){};
         names.getItems().addAll(friendsList);
         names.setMinHeight(550);
@@ -181,6 +232,24 @@ public class RealChatClient extends Application {
                 }
 
                 currentlyTalkingTo = newValue;
+                chatHistory = "";
+            }
+        });
+
+        history.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (oldValue == null) {
+                    writer.println("C" + myUsername + "|" + "_" + newValue + "_" + chatHistory);
+                    writer.flush();
+                }
+                else {
+                    writer.println("C" + myUsername + "|" + oldValue + "|" + "_" + newValue + "_" + chatHistory);
+                    writer.flush();
+                }
+
+                currentlyTalkingTo = newValue;
+                System.out.println(currentlyTalkingTo);
                 chatHistory = "";
             }
         });
@@ -205,14 +274,19 @@ public class RealChatClient extends Application {
                 writer.flush();
             }
         });
-        history.getItems().addAll("Nerd Squad", "ECE homies", "Sports club");
-        history.setMinHeight(550);
+        //history.getItems().addAll("Nerd Squad", "ECE homies", "Sports club");
+
 
         Tab friends = new Tab("Friends List");
         friends.setClosable(false);
         friends.setContent(names);
         friends.setStyle("-fx-font-size: 13pt;");
         friends.setStyle("-fx-base: #FCCD5F");
+
+        history.setMaxHeight(500);
+        history.setMinHeight(550);
+        createGroup.setPrefWidth(240);
+
         Tab chatHistory = new Tab("Group Chats");
         chatHistory.setClosable(false);
         chatHistory.setContent(history);
@@ -259,7 +333,7 @@ public class RealChatClient extends Application {
         gpLayout.add(gpFriendRequests, 1, 575);
 
         gpOutput.add(sentMsgs, 0, 0);
-        gpFriends.addColumn(0, tabPane);
+        gpFriends.addColumn(0, tabPane, createGroup);
         gpTypeMsg.addRow(0, makeMsg, sendMsg);
         gpFriendRequests.add(tpRequests, 0, 0);
         //gpLayout.add(sendMsg, 480, 575);
@@ -333,9 +407,42 @@ public class RealChatClient extends Application {
         System.out.println(myUsername);
         System.out.println(sender);
 
-        if (sender.equals(myUsername) && usernames.contains(currentlyTalkingTo) ||
-                (sender.equals(currentlyTalkingTo) & usernames.contains(myUsername))) {
-            sentMsgs.appendText(msg + "\r\n");
+        boolean isGroup = false;
+        for (String name: usernames) {
+            CharSequence c = ",";
+            if (name.contains(c)) {
+                isGroup = true;
+            }
+        }
+        if (isGroup) {
+            HashSet<String> group = new HashSet<>();
+            String groupName = "";
+            for (String name: usernames) {
+                groupName = name;
+                String user = "";
+                for (int i = 0; i < name.length(); i++) {
+                    if (name.charAt(i) == ',') {
+                        usernames.add(user);
+                        user = "";
+                    }
+                    else {
+                        user += name.charAt(i);
+                    }
+                }
+                usernames.add(user);
+            }
+
+            System.out.println(groupName);
+            System.out.println(currentlyTalkingTo);
+           if (currentlyTalkingTo.equals(groupName)) {
+                sentMsgs.appendText(msg + "\r\n");
+           }
+        }
+        else {
+            if (sender.equals(myUsername) && usernames.contains(currentlyTalkingTo) ||
+                    (sender.equals(currentlyTalkingTo) & usernames.contains(myUsername))) {
+                sentMsgs.appendText(msg + "\r\n");
+            }
         }
     }
 
@@ -429,6 +536,10 @@ public class RealChatClient extends Application {
         names.getItems().add(requestor);
         getFriendRequests(acceptor);
     }
+
+    private void addGroup(String title) {
+        history.getItems().add(title);
+    }
 /*
     public static void main(String[] args) {
         try {
@@ -467,6 +578,9 @@ public class RealChatClient extends Application {
                     }
                     else if (message.charAt(0) == 'F') {
                         updateFriends(message.substring(1, message.length()));
+                    }
+                    else if (message.charAt(0) == 'G') {
+                        addGroup(message.substring(1, message.length()));
                     }
                 }
             }
