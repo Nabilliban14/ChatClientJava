@@ -1,7 +1,7 @@
 package nanda;
 
 
-import java.io.*;
+import java.io.*; 
 import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -163,7 +163,7 @@ public class ChatServer extends Observable {
 						try {
 							sc = new Scanner(file);
 							while(sc.hasNextLine()) {
-								loadedMsg += sc.nextLine() + "Ã®";
+								loadedMsg += sc.nextLine() + "î";
 							}
 						}
 						catch (FileNotFoundException e) {
