@@ -608,6 +608,8 @@ public class ClientMain extends Application {
         gpReg.setPadding( new Insets(10, 10, 10, 10));
         gpReg.setVgap(10);
         gpReg.setHgap(6);
+        gpReg.setStyle("-fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #5AA9FF, #432a33)");
+
         
         Label username = new Label("Enter desired username:");
         GridPane.setConstraints(username, 8 , 12);
