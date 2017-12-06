@@ -73,36 +73,65 @@ public class ChatServer extends Observable {
 							}
 						}
 
-						//writes to sender's chatHistories
-						for (String receiver: usernames) {
-							File file = new File("src/nanda/Users/" + sender + "/ChatHistory/" + receiver + ".txt");
-							FileWriter fileWriter = null;
-							try {
-								fileWriter = new FileWriter(file, true);
-								fileWriter.write(msg + "\r\n");
-								fileWriter.close();
-							}
-							catch (IOException e) {
-								System.out.println("cannot save chatHistory for " + receiver);
+						boolean isGroup = false;
+						for (String name: usernames) {
+							CharSequence c = ",";
+							if (name.contains(c)) {
+								isGroup = true;
 							}
 						}
 
-						//writes to receiver's chatHistories
-						for (String receiver: usernames) {
-							File file = new File("src/nanda/Users/" + receiver + "/ChatHistory/" + sender + ".txt");
-							FileWriter fileWriter = null;
-							try {
-								fileWriter = new FileWriter(file, true);
-								fileWriter.write(msg + "\r\n");
-								fileWriter.close();
+						if (isGroup) {
+							//writes to sender's chatHistories
+							for (String receiver: usernames) {
+								File file = new File("src/nanda/Users/" + receiver + ".txt");
+								FileWriter fileWriter = null;
+								try {
+									fileWriter = new FileWriter(file, true);
+									fileWriter.write(msg + "\r\n");
+									fileWriter.close();
+								}
+								catch (IOException e) {
+									System.out.println("cannot save chatHistory for " + receiver);
+								}
 							}
-							catch (IOException e) {
-								System.out.println("cannot save chatHistory for asdsafgsafgsafg " + receiver);
-							}
+							setChanged();
+							notifyObservers(message);
 						}
 
-						setChanged();
-						notifyObservers(message);
+						else {
+							//writes to sender's chatHistories
+							for (String receiver: usernames) {
+								File file = new File("src/nanda/Users/" + sender + "/ChatHistory/" + receiver + ".txt");
+								FileWriter fileWriter = null;
+								try {
+									fileWriter = new FileWriter(file, true);
+									fileWriter.write(msg + "\r\n");
+									fileWriter.close();
+								}
+								catch (IOException e) {
+									System.out.println("cannot save chatHistory for " + receiver);
+								}
+							}
+
+							//writes to receiver's chatHistories
+							for (String receiver: usernames) {
+								File file = new File("src/nanda/Users/" + receiver + "/ChatHistory/" + sender + ".txt");
+								FileWriter fileWriter = null;
+								try {
+									fileWriter = new FileWriter(file, true);
+									fileWriter.write(msg + "\r\n");
+									fileWriter.close();
+								}
+								catch (IOException e) {
+									System.out.println("cannot save chatHistory for asdsafgsafgsafg " + receiver);
+								}
+							}
+
+							setChanged();
+							notifyObservers(message);
+
+						}
 
 					}
 
@@ -279,6 +308,13 @@ public class ChatServer extends Observable {
 
 						setChanged();
 						notifyObservers("F" + acceptor + "|" + requester);
+					}
+					else if (message.charAt(0) == 'G') {
+						String users = message.substring(1, message.length());
+						File group = new File("src/nanda/" + users + "/.txt");
+						group.mkdir();
+						setChanged();
+						notifyObservers("G" + users);
 					}
 				}
 			} catch (IOException e) {
