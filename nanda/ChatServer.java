@@ -192,7 +192,7 @@ public class ChatServer extends Observable {
 						try {
 							sc = new Scanner(file);
 							while(sc.hasNextLine()) {
-								loadedMsg += sc.nextLine() + "î";
+								loadedMsg += sc.nextLine() + "`";
 							}
 						}
 						catch (FileNotFoundException e) {

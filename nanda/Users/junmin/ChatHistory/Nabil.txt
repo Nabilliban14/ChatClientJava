@@ -1,21 +1,3 @@
 HI
-HI
-YO
-SUP JUNMIN
-SUPPPP
-hello
-Nabil>> yo junmin
-what up
-idk
-<<<<<<< HEAD
-hey sup
-what up buddy
-yea yeay aadfasdf
-hello junmin
-sup nabil
-=======
-ehllo
-hello
-hey
-yo junmin
->>>>>>> 888ce7cfc96c1546f481df0ecda9a8a6af9af5c4
+yo what up fam
+nm

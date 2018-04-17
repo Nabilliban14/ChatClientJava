@@ -476,7 +476,7 @@ public class RealChatClient extends Application {
             sentMsgs.clear();
             String outputMsg = "";
             for (int i = 0; i < message.length(); i++) {
-                if (message.charAt(i) == 'î') {
+                if (message.charAt(i) == '`') {
                     outputMsg += "\r\n";
                 }
                 else {
